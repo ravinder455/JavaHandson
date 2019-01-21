@@ -1,10 +1,12 @@
 package com.example.demo;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -12,7 +14,39 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class JSONUtils {
 
-	public static ObjectNode removeEmptyFields(final ObjectNode jsonNode) {
+	
+	public static String sanitizeJson(String jsonString) {
+		
+		JsonFactory factory = new JsonFactory();
+	    ObjectMapper mapper = new ObjectMapper(factory);
+		
+	    String prevRes = "";
+	    String latestRes = jsonString.trim();
+	    
+	    while(!prevRes.equals(latestRes)) {
+	    	Object rootNode;
+			try {
+				Object result = null;
+				rootNode = mapper.readTree(latestRes);
+				
+				if(rootNode instanceof ObjectNode) {
+				   result = JSONUtils.removeEmptyFields((ObjectNode) rootNode);
+				} else if(rootNode instanceof ArrayNode) {
+				   result = JSONUtils.removeEmptyFields((ArrayNode) rootNode);
+				}
+				
+				prevRes = latestRes;
+				latestRes = result.toString();
+				System.out.println("==>" + latestRes);
+			} catch (IOException e) {
+				System.out.println("Error in cleaning empty json objects/elements");
+				latestRes = jsonString;
+			}
+	    }
+		return latestRes;
+	}
+	
+	private static ObjectNode removeEmptyFields(final ObjectNode jsonNode) {
         ObjectNode ret = new ObjectMapper().createObjectNode();
         Iterator<Entry<String, JsonNode>> iter = jsonNode.fields();
 
@@ -48,7 +82,7 @@ public class JSONUtils {
      * @param an array node
      * @return the array node with empty fields removed
      */
-    public static ArrayNode removeEmptyFields(ArrayNode array) {
+    private static ArrayNode removeEmptyFields(ArrayNode array) {
         ArrayNode ret = new ObjectMapper().createArrayNode();
         Iterator<JsonNode> iter = array.elements();
 
