@@ -31,8 +31,10 @@ public class JSONUtils {
 				
 				if(rootNode instanceof ObjectNode) {
 				   result = JSONUtils.removeEmptyFields((ObjectNode) rootNode);
+				   if(null == result) result = "{}";
 				} else if(rootNode instanceof ArrayNode) {
 				   result = JSONUtils.removeEmptyFields((ArrayNode) rootNode);
+				   if(null == result) result = "[]";
 				}
 				
 				prevRes = latestRes;
@@ -40,7 +42,8 @@ public class JSONUtils {
 				System.out.println("==>" + latestRes);
 			} catch (IOException e) {
 				System.out.println("Error in cleaning empty json objects/elements");
-				latestRes = jsonString;
+				prevRes = jsonString.trim();
+				latestRes = jsonString.trim();
 			}
 	    }
 		return latestRes;
